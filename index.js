@@ -7,34 +7,58 @@ const app = express();
 const server = http.createServer(app);
 const socket = socketIO(server);
 
-let currentEvent;
-let currentPart;
-let currentSlide;
+let state = {
+  currentEvent: undefined,
+  currentPart: undefined,
+  currentSlide: undefined,
+  hide: false,
+  adjustment: {
+    rotateX: 0,
+    rotateY: 0,
+    scale: 1,
+  }
+}
+
 
 socket.on('connection', (client) => {
-  console.log(`[${getDate()}] new client connection: ${client.id}`);
-  client.emit('setEvent', currentEvent);
-  client.emit('setPart', currentPart);
-  client.emit('setSlide', currentSlide);
+  console.log(`[Info] new client connection: ${client.id}`);
+  client.emit('setEvent', state.currentEvent);
+  client.emit('setPart', state.currentPart);
+  client.emit('setSlide', state.currentSlide);
+  client.emit('setAdjustment', state.adjustment);
 
   client.on('setEvent', (event) => {
-    currentEvent = event;
+    state.currentEvent = event;
     socket.emit('setEvent', event);
+    logState('setEvent');
   });
   client.on('setPart', (part) => {
-    currentPart = part;
-    socket.emit('setPart', part)
+    state.currentPart = part;
+    socket.emit('setPart', part);
+    logState('setPart');
   });
   client.on('setSlide', (slide) => {
-    currentSlide = slide;
-    socket.emit('setSlide', slide)
+    state.currentSlide = slide;
+    socket.emit('setSlide', slide);
+    logState('setSlide');
   });
+  client.on('blackout', (hide) => {
+    state.hide = hide;
+    socket.emit('blackout', hide);
+    logState('blackout');
+  });
+  client.on('setAdjustment', (adjustment) => {
+    state.adjustment = adjustment;
+    socket.emit('setAdjustment', adjustment);
+    logState('setAdjustment');
+  })
 });
 
 server.listen(port, () => {
-  console.log(`[${getDate()}] socket-server started on: localhost:${port}`);
+  console.log(`[Info] socket-server started on: localhost:${port}`);
 });
 
-function getDate() {
-  return new Date().toJSON().slice(0,10).replace(/-/g,'/');
+function logState(event) {
+  console.log(`[StateChanged] ${event}`);
+  //console.log(JSON.stringify(state, null, 2));
 }
