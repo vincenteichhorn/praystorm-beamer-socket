@@ -4,14 +4,18 @@ const socketIO = require('socket.io');
 
 const port = 4001;
 const app = express();
+const cors = require('cors');
+app.use(cors());
 const server = http.createServer(app);
 const socket = socketIO(server);
+
 
 let state = {
   currentEvent: undefined,
   currentPart: undefined,
   currentSlide: undefined,
   hide: false,
+  hideForeground: false,
   adjustment: {
     rotateX: 0,
     rotateY: 0,
@@ -46,6 +50,11 @@ socket.on('connection', (client) => {
     state.hide = hide;
     socket.emit('blackout', hide);
     logState('blackout');
+  });
+  client.on('blackoutForeground', (hideForeground) => {
+    state.hideForeground = hideForeground;
+    socket.emit('blackoutForeground', hideForeground);
+    logState('blackoutForeground');
   });
   client.on('setAdjustment', (adjustment) => {
     state.adjustment = adjustment;
