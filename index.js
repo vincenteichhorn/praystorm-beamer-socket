@@ -30,6 +30,8 @@ socket.on('connection', (client) => {
   client.emit('setPart', state.currentPart);
   client.emit('setSlide', state.currentSlide);
   client.emit('setAdjustment', state.adjustment);
+  client.emit('blackout', state.hide);
+  client.emit('blackoutForeground', state.hideForeground);
 
   client.on('setEvent', (event) => {
     state.currentEvent = event;
